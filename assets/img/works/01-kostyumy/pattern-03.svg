@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">
+  <defs>
+    <pattern id="mm" width="12" height="12" patternUnits="userSpaceOnUse">
+      <path d="M12 0 H0 V12" fill="none" stroke="#60647C" stroke-opacity=".12" stroke-width=".6" />
+    </pattern>
+    <marker id="arw" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0 1 L10 5 L0 9 z" fill="#42547E" />
+    </marker>
+  </defs>
+  <rect width="300" height="400" fill="#EFEDE6" />
+  <rect width="300" height="400" fill="url(#mm)" />
+  <g fill="#E2D2AE" stroke="#3B3428" stroke-width="1.4" stroke-linejoin="round">
+    <path d="M22 40 L58 30 Q78 40 96 31 L134 52 Q126 86 138 114 L143 240 L26 246 Z" />
+    <path d="M164 52 L202 30 Q216 47 234 41 L278 46 L282 248 L168 242 Q178 200 170 152 Q158 110 164 52 Z" />
+    <path d="M28 334 Q96 262 164 334 L152 392 L40 392 Z" />
+    <path d="M190 292 Q236 270 282 292 L278 320 Q236 302 194 320 Z" />
+    <path d="M196 344 L280 336 L284 382 L200 390 Z" />
+  </g>
+  <g fill="none" stroke="#6B5D45" stroke-width=".9" stroke-dasharray="4 3">
+    <path d="M32 50 L60 41 Q78 50 95 42 L124 58 Q117 88 128 116 L132 231 L36 236 Z" />
+    <path d="M173 60 L204 42 Q217 56 234 51 L268 55 L272 238 L178 233 Q186 198 180 152 Q169 112 173 60 Z" />
+    <path d="M40 336 Q96 278 152 336 L142 382 L50 382 Z" />
+  </g>
+  <g stroke="#42547E" stroke-width="1.1" marker-start="url(#arw)" marker-end="url(#arw)">
+    <path d="M80 82 V214" /><path d="M224 80 V218" /><path d="M96 312 V378" /><path d="M210 350 L270 344" />
+  </g>
+  <g stroke="#3B3428" stroke-width="1.4">
+    <path d="M138 112 l-7 2" /><path d="M143 180 l-8 0" /><path d="M170 152 l7 -1" /><path d="M96 300 l0 8" />
+  </g>
+  <g font-family="JetBrains Mono, Consolas, monospace" font-size="9.5" fill="#3B3428" letter-spacing=".5">
+    <text x="44" y="150">СПИНКА</text><text x="44" y="163" font-size="8" fill="#6B5D45">2 дет</text>
+    <text x="192" y="150">ПОЛОЧКА</text><text x="192" y="163" font-size="8" fill="#6B5D45">2 дет</text>
+    <text x="66" y="358">РУКАВ</text>
+    <text x="210" y="314" font-size="8.5">ВОРОТНИК</text>
+    <text x="212" y="372" font-size="8.5">МАНЖЕТА</text>
+  </g>
+</svg>

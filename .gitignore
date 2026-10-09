@@ -1,0 +1,17 @@
+# Исходники фото — на сайт идут только сжатые копии из assets/ (их собирают build_*.py)
+портфолио/
+рисунки/
+/*.png
+/*.jpg
+/*.jpeg
+
+# Служебное
+assets/renders/
+assets/img/portrait.png
+ideas/
+__pycache__/
+*.pyc
+venv/
+.DS_Store
+Thumbs.db
+desktop.ini
