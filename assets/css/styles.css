@@ -175,15 +175,42 @@ em { font-style: normal; color: var(--blue); }
 }
 .nav a:hover, .nav a.is-active { color: var(--ink); }
 .nav a:hover::after, .nav a.is-active::after { width: 100%; }
+
+/* Бургер: виден только на телефоне */
+.burger { display: none; }
 @media (max-width: 720px) {
   .brand__role { display: none; }
-  /* Пункты не прячем — иначе на телефоне разделы недостижимы.
-     Даём меню перенестись под лого компактной строкой. */
-  .topbar__inner { flex-wrap: wrap; row-gap: 10px; }
-  .nav { gap: 14px; font-size: 12px; }
-}
-@media (max-width: 400px) {
-  .nav { gap: 10px; font-size: 11px; }
+  .topbar__inner { position: relative; }
+  .burger {
+    display: grid; align-content: center; justify-items: center; gap: 5px;
+    width: 46px; height: 46px; padding: 0; cursor: pointer;
+    background: var(--white); border: 1.5px solid var(--ink); border-radius: var(--radius);
+    box-shadow: 3px 3px 0 var(--blue);
+  }
+  .burger span {
+    display: block; width: 20px; height: 2px; background: var(--ink);
+    transition: transform .25s var(--ease), opacity .2s;
+  }
+  .topbar.is-open .burger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .topbar.is-open .burger span:nth-child(2) { opacity: 0; }
+  .topbar.is-open .burger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* выпадающая панель под шапкой на всю ширину */
+  .nav {
+    position: absolute; left: calc(-1 * var(--gutter)); right: calc(-1 * var(--gutter));
+    top: calc(100% + 14px);
+    flex-direction: column; align-items: stretch; gap: 0;
+    padding: 6px var(--gutter) 14px; font-size: 18px; letter-spacing: .06em;
+    background: var(--paper); border-bottom: 1.5px solid var(--blue-deep);
+    box-shadow: 0 14px 24px rgba(20, 25, 35, .14);
+    opacity: 0; visibility: hidden; transform: translateY(-8px);
+    transition: opacity .22s, transform .22s var(--ease), visibility 0s .22s;
+  }
+  .topbar.is-open .nav { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+  .nav a { padding: 15px 0; border-bottom: 1px solid color-mix(in srgb, var(--blue-deep) 22%, transparent); }
+  .nav a:last-child { border-bottom: 0; }
+  .nav a::after { display: none; }
+  .nav a.is-active { color: var(--blue-deep); }
 }
 
 /* --------- Общие секции --------- */
@@ -251,7 +278,8 @@ main { display: block; }
 }
 .sketch-card {
   position: absolute; top: 0; left: 0;
-  width: clamp(170px, 20vw, 300px);
+  /* на узком десктопе карточки уменьшаются быстрее, чем 20vw, чтобы не лезть на плашку и бирку */
+  width: clamp(130px, calc(32.6vw - 176px), 300px);
   height: auto;
   padding: 6px;
   background: var(--white);
@@ -262,8 +290,7 @@ main { display: block; }
   will-change: transform, opacity;
   transform: translate3d(-9999px, 0, 0);
 }
-@media (max-width: 860px) { .hero__sketches { display: none; } }
-@media (prefers-reduced-motion: reduce) { .hero__sketches { display: none; } }
+@media (prefers-reduced-motion: reduce) { .hero__sketches { display: none; } .hero { --strip-h: 0px; } }
 
 /* Плашка с заголовком (text.webp) — поверх фона и эскизов.
    Позиция по красной метке на hero22.png (доли ширины/высоты хиро). */
@@ -322,7 +349,7 @@ main { display: block; }
 }
 .hero__lead { font-size: clamp(16px, 2.3vw, 20px); color: var(--ink-soft); max-width: 46ch; margin: 0 0 30px; }
 .hero__actions {
-  display: flex; flex-wrap: wrap; gap: 24px; margin: 0;
+  display: flex; flex-wrap: wrap; gap: clamp(12px, 1.7vw, 24px); margin: 0;
   /* привязка к табличке «Конструктор · Технолог», впечатанной в фото:
      её левый край ≈ 47 % ширины хиро, низ ≈ 28 % ширины от верха
      (фон масштабируется по ширине, cover + top). */
@@ -392,12 +419,16 @@ main { display: block; }
    Высота хиро перестаёт совпадать с пропорцией фото, поэтому табличку
    позиционируем от ширины (высоты фото), а не в % от высоты блока —
    иначе она съезжает с красной метки на фоне. */
-@media (max-width: 860px) {
+.hero__actions .btn { font-size: clamp(11px, 1vw, 14px); padding: clamp(9px, .95vw, 14px) clamp(14px, 1.85vw, 26px); }
+
+@media (max-width: 1000px) {
   .hero {
     /* на телефоне фото приближено (--zoom) и сдвинуто влево (--shift, доли ширины),
        чтобы плашка с заголовком читалась; плашка и бирка пересчитаны так же */
-    --zoom: 2;
-    --shift: 0.78;
+    --zoom: 1.5;
+    --shift: 0.25;   /* окно фото 1/6…5/6 по ширине: бирка (центр 50 %) встаёт по центру экрана */
+    --card-w: clamp(90px, 24vw, 170px);
+    --strip-h: calc(var(--card-w) * 1.45 + 30px);
     --w: calc(100vw - 2 * var(--frame));
     --photo-h: calc(var(--w) * 3072 / 5504 * var(--zoom));
     aspect-ratio: auto;
@@ -405,7 +436,7 @@ main { display: block; }
     background-size: calc(100% * var(--zoom)) auto;
     background-position: calc(var(--w) * var(--shift) * -1) top;
     /* нижние ~13 % фона — прозрачная зона с висящей биркой, кнопки встают под неё */
-    padding: calc(var(--photo-h) + 14px) var(--gutter) 8px;
+    padding: calc(var(--photo-h) + var(--strip-h) + 20px) var(--gutter) 8px;
   }
   .hero__plate {
     top: calc(var(--photo-h) * 0.20);
@@ -417,12 +448,25 @@ main { display: block; }
     left: calc(var(--w) * (0.396 * var(--zoom) - var(--shift)));
     width: calc(20.4% * var(--zoom));
   }
+  /* лента эскизов под биркой: на телефоне конвейер едет отдельной полосой,
+     а не по «столу», чтобы не закрывать плашку и бирку */
+  .hero__sketches {
+    inset: auto; left: 0; right: 0;
+    top: calc(var(--photo-h) + 6px); height: var(--strip-h);
+    overflow-x: clip; overflow-y: visible;  /* тени карточек не обрезаются снизу */
+  }
+  .sketch-card { width: var(--card-w); }
   .hero__actions {
     position: static; left: auto; top: auto; margin: 0;
     justify-content: center; gap: 14px 18px;
   }
   .hero__actions .btn { padding: 12px 20px; font-size: 13px; }
 }
+/* планшет: чем шире экран, тем меньше нужно приближать фото (бирка остаётся по центру) */
+@media (min-width: 521px) and (max-width: 700px) { .hero { --zoom: 1.25; --shift: 0.125; } }
+@media (min-width: 701px) and (max-width: 1000px) { .hero { --zoom: 1; --shift: 0; } }
+/* рамка листа на телефоне скрыта — фото хиро идёт на всю ширину экрана */
+@media (max-width: 640px) { .hero, .topbar { margin: 0; } .hero { --w: 100vw; } }
 
 
 /* --------- ОБО МНЕ: раскройный стол --------- */

@@ -231,15 +231,20 @@ document.querySelectorAll('[data-year]').forEach(el => {
   const Y_TOP = 0.26;    // верх дуги в центре, доля высоты
   const JITTERY = 0.05;  // вертикальный разброс
   const ROT = 4;         // максимальный наклон, град
+  const PHONE_CARDS = 6, PHONE_PERIOD = 42, PHONE_X0 = -0.3, PHONE_X1 = 1.3;
   const OP_FLOOR = 0.05; // нижний предел непрозрачности в зонах перехода (не 0)
 
   // Границы видимости по доле ширины (xf): два окна с «дырой» на табличке.
   const clamp01 = (v) => v < 0 ? 0 : v > 1 ? 1 : v;
   const ramp = (v, a, b) => clamp01((v - a) / (b - a));
 
-  const wide = window.matchMedia('(max-width: 860px)');
+  const wide = window.matchMedia('(max-width: 1000px)');
   let W = 0, H = 0;
-  const measure = () => { const r = layer.getBoundingClientRect(); W = r.width; H = r.height; };
+  let CW = 0;   // ширина карточки, доля ширины слоя
+  const measure = () => {
+    const r = layer.getBoundingClientRect(); W = r.width; H = r.height;
+    CW = cards.length && W ? cards[0].el.offsetWidth / W : 0.2;
+  };
 
   let ptr = 0;
   const assign = (c) => {
@@ -255,14 +260,15 @@ document.querySelectorAll('[data-year]').forEach(el => {
     el.className = 'sketch-card';
     el.alt = ''; el.decoding = 'async'; el.loading = 'eager';
     layer.appendChild(el);
-    const c = { el, phase: k / CARDS, prevP: 0, rot: 0, jy: 0 };
+    const c = { el, k, phase: k / CARDS, prevP: 0, rot: 0, jy: 0 };
     assign(c);
     cards.push(c);
   }
 
   const opacityAt = (xf) => {
-    // окно 1: слева до таблички
-    const left  = Math.min(ramp(xf, -0.06, 0.00), 1 - ramp(xf, 0.30, 0.37));
+    // окно 1: слева до таблички; гаснем по ПРАВОМУ краю карточки, чтобы она
+    // целиком уходила до плашки и бирки, а не наезжала на них
+    const left  = Math.min(ramp(xf, -0.06, 0.00), 1 - ramp(xf + CW, 0.34, 0.41));
     // окно 2: за табличкой → уход за правый край
     const right = Math.min(ramp(xf, 0.74, 0.80), 1 - ramp(xf, 1.05, 1.15));
     // максимум непрозрачности на «полке», в зонах перехода — не 0, а OP_FLOOR
@@ -273,12 +279,25 @@ document.querySelectorAll('[data-year]').forEach(el => {
   const frame = (now) => {
     if (!t0) t0 = now;
     const t = (now - t0) / 1000;
+    const phone = wide.matches;
     for (const c of cards) {
-      const p = ((t / PERIOD) + c.phase) % 1;
+      // на телефоне — короткий пул и более быстрый проход по полосе под биркой
+      if (phone) {
+        c.el.style.display = c.k < PHONE_CARDS ? '' : 'none';
+        if (c.k >= PHONE_CARDS) continue;
+      }
+      const p = ((t / (phone ? PHONE_PERIOD : PERIOD)) + (phone ? c.k / PHONE_CARDS : c.phase)) % 1;
       if (p < c.prevP - 0.5) assign(c);     // прошёл круг → новый эскиз + новый разброс
       c.prevP = p;
-      const xf = X0 + (X1 - X0) * p;
+      const xf = (phone ? PHONE_X0 : X0) + ((phone ? PHONE_X1 : X1) - (phone ? PHONE_X0 : X0)) * p;
       const x = xf * W;
+      if (phone) {
+        const yp = 10 + c.jy * H + Math.sin(xf * 6 + c.k) * 4;
+        c.el.style.transform = `translate3d(${x.toFixed(1)}px, ${yp.toFixed(1)}px, 0) rotate(${c.rot.toFixed(2)}deg)`;
+        c.el.style.opacity = Math.min(ramp(xf, -0.1, 0.0), 1 - ramp(xf, 1.0, 1.1)).toFixed(3);
+        c.el.style.zIndex = '1';
+        continue;
+      }
       // дуга: нижние углы → подъём к центру → нижние углы
       const u = clamp01(xf);
       const arc = 1 - (2 * u - 1) * (2 * u - 1); // 1 в центре, 0 у краёв
@@ -293,12 +312,12 @@ document.querySelectorAll('[data-year]').forEach(el => {
     raf = requestAnimationFrame(frame);
   };
 
-  const start = () => { if (!raf && !reduceMotion && !wide.matches) { measure(); t0 = 0; raf = requestAnimationFrame(frame); } };
+  const start = () => { if (!raf && !reduceMotion) { measure(); t0 = 0; raf = requestAnimationFrame(frame); } };
   const stop  = () => { if (raf) { cancelAnimationFrame(raf); raf = null; } };
 
   window.addEventListener('resize', measure);
   document.addEventListener('visibilitychange', () => { document.hidden ? stop() : start(); });
-  wide.addEventListener('change', () => { wide.matches ? stop() : start(); });
+  wide.addEventListener('change', () => { stop(); start(); });
   start();
 })();
 
@@ -373,6 +392,22 @@ document.querySelectorAll('[data-year]').forEach(el => {
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', update);
   update();
+})();
+
+/* ---------- Бургер-меню (телефон) ---------- */
+(function burgerMenu() {
+  const bar = document.querySelector('.topbar');
+  const btn = bar && bar.querySelector('.burger');
+  if (!btn) return;
+  const set = (open) => {
+    bar.classList.toggle('is-open', open);
+    btn.setAttribute('aria-expanded', String(open));
+  };
+  btn.addEventListener('click', () => set(!bar.classList.contains('is-open')));
+  bar.querySelectorAll('.nav a').forEach(a => a.addEventListener('click', () => set(false)));
+  document.addEventListener('click', (e) => { if (!bar.contains(e.target)) set(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+  window.matchMedia('(min-width: 721px)').addEventListener('change', () => set(false));
 })();
 
 /* ---------- Курсор-игла с ниткой ---------- */
