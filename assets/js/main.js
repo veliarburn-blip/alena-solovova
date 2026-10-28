@@ -64,7 +64,13 @@ document.querySelectorAll('[data-year]').forEach(el => {
     note.textContent = w.pattern.length ? '+ лекала' : (w.photos.length > 1 ? `${w.photos.length} фото` : '');
     cap.append(title, note);
     b.append(img, cap);
-    b.addEventListener('click', () => show(i));
+    b.addEventListener('click', () => {
+      show(i);
+      // на телефоне работа открывается под сеткой — подводим к ней
+      if (window.matchMedia('(max-width: 820px)').matches) {
+        $('.works__main').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+      }
+    });
     $('.works__thumbs').append(b);
     return b;
   });
