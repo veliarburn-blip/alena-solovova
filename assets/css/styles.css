@@ -17,7 +17,7 @@
   --pen:        #1A2A59;   /* точечный акцент */
   --grid:       #C6C7D2;   /* сине-серая клетка миллиметровки */
   --grid-soft:  #D6D6DE;
-  --line:       #CAB388;   /* тёплое золото — разделители/акцент */
+  --line:       #1A2A59;   /* синий — рамки, разделители */
   --white:      #FBFAF6;
 
   --maxw: 1480px;
@@ -218,7 +218,7 @@ main { display: block; }
 
 /* Брусковый заголовок (Bitter), сплошная заливка */
 .section h2.h2--slab {
-  font-family: 'Zilla Slab', serif;
+  font-family: 'Literata', Georgia, serif;
   font-weight: 700;
   letter-spacing: 0;
   color: var(--blue-deep);
@@ -269,11 +269,12 @@ main { display: block; }
    Позиция по красной метке на hero22.png (доли ширины/высоты хиро). */
 .hero__plate {
   position: absolute;
-  /* метка на фоне: x 46.25–80.93 %, y 21.05–48.62 %; ~0.1 % запаса по краям,
-     чтобы при субпиксельном округлении красный край метки не проступал */
-  left: 46.14%;
-  top: 20.9%;
-  width: 34.9%;
+  /* метка на фоне: x 46.25–80.93 %, y 21.05–48.62 %; запас по краям ~1 %,
+     чтобы при субпиксельном округлении на узких экранах красный край метки
+     не проступал (на маленьких ширинах даже 1px округления — заметная доля) */
+  left: 45.3%;
+  top: 20%;
+  width: 36.7%;
   height: auto;
   z-index: 3;
   pointer-events: none;
@@ -298,7 +299,7 @@ main { display: block; }
 }
 .hero__tag span {
   display: block;
-  font-family: 'Zilla Slab', serif;
+  font-family: 'Literata', Georgia, serif;
   font-weight: 700;
   font-size: 12.5cqw;
   line-height: 1;
@@ -357,26 +358,34 @@ main { display: block; }
 .hero__facts span { font-family: var(--f-mono); font-size: 11px; letter-spacing: .03em;
   text-transform: uppercase; color: var(--chalk); max-width: 18ch; margin-top: 6px; }
 
-/* Факты под хиро — как размерная строка чертежа */
+/* Факты под хиро — как основная надпись чертежа: двойная рамка, ячейки */
 .facts {
   max-width: var(--maxw);
   margin: 0 auto;
   padding: clamp(28px, 4vw, 48px) var(--gutter) 0;
 }
 .facts .hero__facts {
+  position: relative;
   display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0;
-  padding: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  padding: 0;
+  border: 1.5px solid var(--blue-deep); border-radius: var(--radius);
 }
-.facts .hero__facts li { padding: 20px clamp(14px, 2vw, 28px) 18px; position: relative; align-content: start; }
-/* засечки-разделители, как на линейке */
-.facts .hero__facts li + li::before {
-  content: ""; position: absolute; left: 0; top: 18%; bottom: 18%; width: 1px; background: var(--line);
+/* внутренняя тонкая рамка — тот же приём, что у рамки листа */
+.facts .hero__facts::after {
+  content: ""; position: absolute; inset: 4px; pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--blue-deep) 45%, transparent);
+  border-radius: calc(var(--radius) - 3px);
 }
-.facts .hero__facts span { max-width: 26ch; }
+.facts .hero__facts li {
+  padding: 24px clamp(16px, 2.4vw, 34px) 22px; position: relative; align-content: start;
+}
+.facts .hero__facts li + li { border-left: 1px solid var(--blue-deep); }
+.facts .hero__facts b { margin-bottom: 4px; }
+.facts .hero__facts span { max-width: 26ch; color: var(--ink-soft); }
 @media (max-width: 720px) {
   .facts .hero__facts { grid-template-columns: 1fr 1fr; }
-  .facts .hero__facts li:nth-child(3)::before { display: none; }
-  .facts .hero__facts li:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  .facts .hero__facts li:nth-child(3) { border-left: 0; }
+  .facts .hero__facts li:nth-child(n + 3) { border-top: 1px solid var(--blue-deep); }
 }
 
 /* На узких экранах кнопкам нет места на фото — выносим их под снимок.
@@ -385,14 +394,29 @@ main { display: block; }
    иначе она съезжает с красной метки на фоне. */
 @media (max-width: 860px) {
   .hero {
-    --photo-h: calc((100vw - 2 * var(--frame)) * 3072 / 5504);
+    /* на телефоне фото приближено (--zoom) и сдвинуто влево (--shift, доли ширины),
+       чтобы плашка с заголовком читалась; плашка и бирка пересчитаны так же */
+    --zoom: 2;
+    --shift: 0.78;
+    --w: calc(100vw - 2 * var(--frame));
+    --photo-h: calc(var(--w) * 3072 / 5504 * var(--zoom));
     aspect-ratio: auto;
     display: block;
+    background-size: calc(100% * var(--zoom)) auto;
+    background-position: calc(var(--w) * var(--shift) * -1) top;
     /* нижние ~13 % фона — прозрачная зона с висящей биркой, кнопки встают под неё */
     padding: calc(var(--photo-h) + 14px) var(--gutter) 8px;
   }
-  .hero__plate { top: calc(var(--photo-h) * 0.209); }
-  .hero__tag   { top: calc(var(--photo-h) * 0.876); }
+  .hero__plate {
+    top: calc(var(--photo-h) * 0.20);
+    left: calc(var(--w) * (0.453 * var(--zoom) - var(--shift)));
+    width: calc(36.7% * var(--zoom));
+  }
+  .hero__tag {
+    top: calc(var(--photo-h) * 0.876);
+    left: calc(var(--w) * (0.396 * var(--zoom) - var(--shift)));
+    width: calc(20.4% * var(--zoom));
+  }
   .hero__actions {
     position: static; left: auto; top: auto; margin: 0;
     justify-content: center; gap: 14px 18px;
@@ -710,7 +734,7 @@ main { display: block; }
   border-bottom: 1.5px solid rgba(66,84,126,.35);
 }
 .spread__head h3 {
-  font-family: var(--f-display); font-weight: 700; text-transform: uppercase;
+  font-family: 'Literata', Georgia, serif; font-weight: 700; text-transform: uppercase;
   letter-spacing: .01em; line-height: .94;
   font-size: clamp(28px, 3.8vw, 48px); margin: 0; color: var(--blue-deep);
 }

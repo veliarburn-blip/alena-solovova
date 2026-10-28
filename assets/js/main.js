@@ -415,10 +415,10 @@ document.querySelectorAll('[data-year]').forEach(el => {
 
   function loop() {
     // мягкое следование — «протягиваем нитку»
-    x += (tx - x) * 0.35;
-    y += (ty - y) * 0.35;
-    cursor.style.left = x + 'px';
-    cursor.style.top  = y + 'px';
+    x += (tx - x) * 0.7;
+    y += (ty - y) * 0.7;
+    // translate вместо left/top: не вызывает layout на каждом кадре
+    cursor.style.translate = `${x}px ${y}px`;
 
     trail.push({ x: x + EYE_DX, y: y + EYE_DY });
     if (trail.length > MAX) trail.shift();
