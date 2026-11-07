@@ -453,17 +453,15 @@ main { display: block; }
 /* рамка листа на телефоне скрыта — фото хиро идёт на всю ширину экрана */
 @media (max-width: 640px) { .hero, .topbar { margin: 0; } .hero { --w: 100vw; } }
 
-/* Телефон: сверху лента эскизов, под ней табличка; фото с рукой начинается
-   под табличкой, и на нём лежат кнопки и ряд цифр (.facts). Табличка отстоит
-   от ленты, краёв экрана и фото
-   на один и тот же --gap. Переменные объявлены и на main, и на .hero:
-   .facts — сосед хиро и берёт их из main.
+/* Телефон: сверху лента эскизов, под ней табличка, под табличкой фото с рукой,
+   на нём кнопки; ряд цифр (.facts) идёт обычным блоком под фото. Табличка
+   отстоит от ленты, краёв экрана и фото на один и тот же --gap.
    Фото рисует .hero::before: так у снимка можно срезать верх (--crop) —
-   стену с выкройками, на которой не читаются кнопки и цифры, — а под текстом
+   стену с выкройками, на которой не читаются кнопки, — а под кнопками
    положить светлую вуаль. fon-mobile.webp — тот же снимок с закрашенной
-   серой заглушкой (она оказывается за кнопками и цифрами). */
+   серой заглушкой (она оказывается за кнопками). */
 @media (max-width: 720px) {
-  #top, .hero {
+  .hero {
     --w: calc(100vw - 2 * var(--frame));
     --zoom: 1.6;
     --shift: calc(0.5 - 0.5 / var(--zoom));   /* окно снимка по центру */
@@ -476,11 +474,7 @@ main { display: block; }
     --plate-h: calc((var(--w) - 2 * var(--gap)) / 2.25);   /* 2.25 — пропорция text.webp */
     --bg-top: calc(var(--plate-top) + var(--plate-h) + var(--gap));
     --actions-top: calc(var(--bg-top) + var(--gap));
-    --facts-top: calc(var(--actions-top) + 46px + var(--gap) * 1.5);   /* 46px — высота кнопок */
     --photo-vis: calc(var(--photo-h) * (1 - var(--crop)));
-  }
-  #top { position: relative; }
-  .hero {
     background-image: none;
     isolation: isolate;   /* ::before с z-index:-1 остаётся внутри хиро, под кнопками */
     padding-top: var(--actions-top);
@@ -491,9 +485,9 @@ main { display: block; }
     content: ""; position: absolute; z-index: -1;
     left: 0; right: 0; top: var(--bg-top); height: var(--photo-vis);
     background:
-      /* вуаль под кнопками и цифрами (120px ≈ высота ряда цифр) */
-      linear-gradient(rgb(220 221 227 / .82), rgb(220 221 227 / .6) 70%, rgb(220 221 227 / 0))
-        0 0 / 100% calc(var(--facts-top) - var(--bg-top) + 120px) no-repeat,
+      /* вуаль под кнопками (46px — их высота) */
+      linear-gradient(rgb(220 221 227 / .82), rgb(220 221 227 / .6) 60%, rgb(220 221 227 / 0))
+        0 0 / 100% calc(var(--gap) * 3 + 46px) no-repeat,
       url("../img/fon-mobile.webp")
         calc(var(--w) * var(--shift) * var(--zoom) * -1) calc(var(--photo-h) * var(--crop) * -1)
         / calc(100% * var(--zoom)) auto no-repeat;
@@ -509,15 +503,9 @@ main { display: block; }
     left: calc(var(--w) * (0.396 - var(--shift)) * var(--zoom));
     width: calc(var(--w) * 0.204 * var(--zoom));
   }
-  /* цифры — поверх фото, вне потока: следующий блок идёт сразу за хиро */
-  .facts {
-    position: absolute; z-index: 2;
-    top: var(--facts-top); left: 0; right: 0;
-    padding-top: 0;
-  }
 }
-@media (max-width: 640px) { #top, .hero { --w: 100vw; } }
-/* кнопки в одну строку даже на 320px: от их высоты считается ряд цифр */
+@media (max-width: 640px) { .hero { --w: 100vw; } }
+/* кнопки в одну строку даже на 320px: на двух строках они вылезли бы за вуаль */
 @media (max-width: 380px) { .hero__actions { gap: 10px; } .hero__actions .btn { padding: 12px 13px; font-size: 12px; } }
 
 
