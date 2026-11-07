@@ -26,6 +26,9 @@ document.querySelectorAll('[data-year]').forEach(el => {
   const hint = $('.works__hint');
   const STAMP_ROWS = [['fabric', 'Материал'], ['size', 'Размер'], ['work', 'Что сделано'], ['client', 'Для кого']];
   const ALL = 'Все';
+  // на телефоне блока «лекало ↔ изделие» нет: миниатюра сразу открывает просмотр фото
+  const phone = window.matchMedia('(max-width: 820px)');
+  let openViewer = null;
   let current = 0;
   let touched = false; // пользователь сам тянул иглу — подсказку-анимацию не крутим
 
@@ -66,10 +69,7 @@ document.querySelectorAll('[data-year]').forEach(el => {
     b.append(img, cap);
     b.addEventListener('click', () => {
       show(i);
-      // на телефоне работа открывается под сеткой — подводим к ней
-      if (window.matchMedia('(max-width: 820px)').matches) {
-        $('.works__main').scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
-      }
+      if (phone.matches && openViewer) openViewer();
     });
     $('.works__thumbs').append(b);
     return b;
@@ -146,7 +146,8 @@ document.querySelectorAll('[data-year]').forEach(el => {
   const box = document.querySelector('.lightbox');
   if (box && typeof box.showModal === 'function') {
     const boxImg = box.querySelector('.lightbox__img');
-    const boxCap = box.querySelector('.lightbox__cap');
+    const boxTitle = box.querySelector('.lightbox__title');
+    const boxDesc = box.querySelector('.lightbox__desc');
     const prev = box.querySelector('.lightbox__btn--prev');
     const next = box.querySelector('.lightbox__btn--next');
     let list = [];
@@ -156,21 +157,23 @@ document.querySelectorAll('[data-year]').forEach(el => {
       const item = list[pos];
       boxImg.src = item.src;
       boxImg.alt = item.cap;
-      boxCap.textContent = list.length > 1 ? `${item.cap} · ${pos + 1} / ${list.length}` : item.cap;
+      boxTitle.textContent = list.length > 1 ? `${item.cap} · ${pos + 1} / ${list.length}` : item.cap;
     };
     const go = (d) => { pos = (pos + d + list.length) % list.length; render(); };
     const open = () => {
       const w = WORKS[current];
-      list = [
-        ...w.pattern.map(src => ({ src, cap: 'Лекало' })),
-        ...w.photos.map(src => ({ src, cap: w.title || '' })),
-      ];
+      const photos = w.photos.map(src => ({ src, cap: w.title || '' }));
+      const patterns = w.pattern.map(src => ({ src, cap: 'Лекало' }));
+      // на телефоне сравнения нет — начинаем с изделия, лекала в конце
+      list = phone.matches ? [...photos, ...patterns] : [...patterns, ...photos];
       pos = 0;
+      boxDesc.textContent = w.desc || '';
       prev.hidden = next.hidden = list.length < 2;
       render();
       box.showModal();
     };
 
+    openViewer = open;
     openBtn.addEventListener('click', open);
     // у работы без лекал слайдера нет — клик по фото открывает просмотр
     cmp.addEventListener('click', () => { if (cmp.classList.contains('is-single')) open(); });
@@ -237,7 +240,10 @@ document.querySelectorAll('[data-year]').forEach(el => {
   const Y_TOP = 0.26;    // верх дуги в центре, доля высоты
   const JITTERY = 0.05;  // вертикальный разброс
   const ROT = 4;         // максимальный наклон, град
-  const PHONE_CARDS = 6, PHONE_PERIOD = 42, PHONE_X0 = -0.3, PHONE_X1 = 1.3;
+  // до 1000px карточки едут ровной лентой; их число подбирается под ширину
+  // карточки (она разная на телефоне и планшете), чтобы не наезжали друг на друга
+  const PHONE_PERIOD = 42, PHONE_X0 = -0.3, PHONE_X1 = 1.3, PHONE_STEP = 1.12;
+  let phoneCards = CARDS;
   const OP_FLOOR = 0.05; // нижний предел непрозрачности в зонах перехода (не 0)
 
   // Границы видимости по доле ширины (xf): два окна с «дырой» на табличке.
@@ -250,6 +256,7 @@ document.querySelectorAll('[data-year]').forEach(el => {
   const measure = () => {
     const r = layer.getBoundingClientRect(); W = r.width; H = r.height;
     CW = cards.length && W ? cards[0].el.offsetWidth / W : 0.2;
+    phoneCards = Math.max(4, Math.min(CARDS, Math.floor((PHONE_X1 - PHONE_X0) / (CW * PHONE_STEP))));
   };
 
   let ptr = 0;
@@ -287,18 +294,20 @@ document.querySelectorAll('[data-year]').forEach(el => {
     const t = (now - t0) / 1000;
     const phone = wide.matches;
     for (const c of cards) {
-      // на телефоне — короткий пул и более быстрый проход по полосе под биркой
+      // на телефоне — свой пул и более быстрый проход по ровной полосе
       if (phone) {
-        c.el.style.display = c.k < PHONE_CARDS ? '' : 'none';
-        if (c.k >= PHONE_CARDS) continue;
+        c.el.style.display = c.k < phoneCards ? '' : 'none';
+        if (c.k >= phoneCards) continue;
       }
-      const p = ((t / (phone ? PHONE_PERIOD : PERIOD)) + (phone ? c.k / PHONE_CARDS : c.phase)) % 1;
+      const p = ((t / (phone ? PHONE_PERIOD : PERIOD)) + (phone ? c.k / phoneCards : c.phase)) % 1;
       if (p < c.prevP - 0.5) assign(c);     // прошёл круг → новый эскиз + новый разброс
       c.prevP = p;
       const xf = (phone ? PHONE_X0 : X0) + ((phone ? PHONE_X1 : X1) - (phone ? PHONE_X0 : X0)) * p;
       const x = xf * W;
       if (phone) {
-        const yp = 10 + c.jy * H + Math.sin(xf * 6 + c.k) * 4;
+        // отступ и покачивание — доли высоты полосы: высота ленты зависит от
+        // ширины экрана, фиксированные пиксели выталкивали бы карточки за её край
+        const yp = (0.04 + c.jy * 0.5) * H + Math.sin(xf * 6 + c.k) * H * 0.015;
         c.el.style.transform = `translate3d(${x.toFixed(1)}px, ${yp.toFixed(1)}px, 0) rotate(${c.rot.toFixed(2)}deg)`;
         c.el.style.opacity = Math.min(ramp(xf, -0.1, 0.0), 1 - ramp(xf, 1.0, 1.1)).toFixed(3);
         c.el.style.zIndex = '1';
@@ -323,8 +332,7 @@ document.querySelectorAll('[data-year]').forEach(el => {
 
   window.addEventListener('resize', measure);
   document.addEventListener('visibilitychange', () => { document.hidden ? stop() : start(); });
-  wide.addEventListener('change', () => { stop(); start(); });
-  start();
+  wide.addEventListener('change', () => { stop(); start(); });  start();
 })();
 
 /* ---------- Reveal + разворот сантиметровой ленты ---------- */
@@ -428,8 +436,7 @@ document.querySelectorAll('[data-year]').forEach(el => {
   /* нитка выходит из ушка, а не из острия: ушко смещено от острия на
      (21.5-4, 6.5-24)·30/28 ≈ (18.75, -18.75)px */
   const EYE_DX = 18.75, EYE_DY = -18.75;
-  let x = window.innerWidth / 2, y = window.innerHeight / 2;
-  let tx = x, ty = y;
+  let tx = 0, ty = 0;
   let active = false;   // системный курсор прячем только после первого движения
   let running = false;  // флаг RAF-цикла, чтобы не крутить его в простое
 
@@ -438,7 +445,10 @@ document.querySelectorAll('[data-year]').forEach(el => {
   }
 
   window.addEventListener('mousemove', (e) => {
-    tx = e.clientX; ty = e.clientY;
+    // целые пиксели: на дробном сдвиге тонкие линии иглы размываются сглаживанием
+    tx = Math.round(e.clientX); ty = Math.round(e.clientY);
+    // двигаем иглу прямо в обработчике, без ожидания кадра RAF
+    cursor.style.translate = `${tx}px ${ty}px`;
     if (!active) {
       active = true;
       document.documentElement.classList.add('has-custom-cursor');
@@ -455,24 +465,31 @@ document.querySelectorAll('[data-year]').forEach(el => {
   });
 
   function loop() {
-    // мягкое следование — «протягиваем нитку»
-    x += (tx - x) * 0.7;
-    y += (ty - y) * 0.7;
-    // translate вместо left/top: не вызывает layout на каждом кадре
-    cursor.style.translate = `${x}px ${y}px`;
-
-    trail.push({ x: x + EYE_DX, y: y + EYE_DY });
+    trail.push({ x: tx + EYE_DX, y: ty + EYE_DY });
     if (trail.length > MAX) trail.shift();
     if (trail.length > 1) {
       let d = `M ${trail[0].x} ${trail[0].y}`;
       for (let i = 1; i < trail.length; i++) d += ` L ${trail[i].x} ${trail[i].y}`;
       path.setAttribute('d', d);
     }
-    // пока игла ещё догоняет цель — продолжаем; в покое цикл останавливается
-    if (Math.abs(tx - x) > 0.3 || Math.abs(ty - y) > 0.3) {
+    // пока нитка не стянулась в точку за иглой — продолжаем; в покое цикл останавливается
+    const head = trail[trail.length - 1];
+    if (trail[0].x !== head.x || trail[0].y !== head.y) {
       requestAnimationFrame(loop);
     } else {
       running = false;
     }
   }
+})();
+
+/* ---------- «Обо мне»: раскрытие полного текста ---------- */
+(function aboutMore() {
+  const text = document.querySelector('.desk__text');
+  const btn = text && text.querySelector('.desk__toggle');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const open = text.classList.toggle('is-open');
+    btn.setAttribute('aria-expanded', String(open));
+    btn.textContent = open ? 'Свернуть' : 'Читать полностью';
+  });
 })();

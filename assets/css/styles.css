@@ -29,6 +29,11 @@
   --f-mono:    'JetBrains Mono', ui-monospace, monospace;
   --f-hand:    'Caveat', cursive;
 
+  /* блинтовое тиснение (бирка хиро, заголовки, цифры фактов):
+     светлый блик снизу, тень по верхней кромке */
+  --emboss: #4E5770;
+  --emboss-shadow: 0 1px 0 rgba(255, 255, 255, .75), 0 -1px 0 rgba(40, 36, 30, .28);
+
   --ease: cubic-bezier(.22, .61, .36, 1);
   --radius: 8px;
 }
@@ -179,7 +184,7 @@ em { font-style: normal; color: var(--blue); }
 /* Бургер: виден только на телефоне */
 .burger { display: none; }
 @media (max-width: 720px) {
-  .brand__role { display: none; }
+  .brand__role { font-size: 9.5px; }
   .topbar__inner { position: relative; }
   .burger {
     display: grid; align-content: center; justify-items: center; gap: 5px;
@@ -221,18 +226,10 @@ main { display: block; }
   padding: clamp(56px, 9vw, 120px) var(--gutter);
   position: relative;
 }
-.eyebrow, .sheet-no {
+.eyebrow {
   font-family: var(--f-mono); text-transform: uppercase;
   letter-spacing: .18em; font-size: 12px; color: var(--blue);
   margin: 0 0 18px;
-}
-.sheet-no {
-  color: var(--chalk); letter-spacing: .22em;
-  padding-left: 26px; position: relative;
-}
-.sheet-no::before {
-  content: ""; position: absolute; left: 0; top: 50%; width: 18px; height: 1px;
-  background: var(--chalk);
 }
 .section__head { max-width: 760px; margin-bottom: clamp(32px, 5vw, 56px); }
 .section h2 {
@@ -243,15 +240,13 @@ main { display: block; }
 }
 .section__sub { font-size: clamp(16px, 2.2vw, 19px); color: var(--ink-soft); margin: 0; max-width: 60ch; }
 
-/* Брусковый заголовок (Bitter), сплошная заливка */
+/* Заголовок разделов — тем же блинтовым тиснением, что надпись на бирке хиро */
 .section h2.h2--slab {
   font-family: 'Literata', Georgia, serif;
   font-weight: 700;
-  letter-spacing: 0;
-  color: var(--blue-deep);
-  display: inline-block;
-  transform: scaleY(1.18);
-  transform-origin: bottom left;
+  letter-spacing: .02em;
+  color: var(--emboss);
+  text-shadow: var(--emboss-shadow);
 }
 
 /* --------- HERO --------- */
@@ -290,7 +285,7 @@ main { display: block; }
   will-change: transform, opacity;
   transform: translate3d(-9999px, 0, 0);
 }
-@media (prefers-reduced-motion: reduce) { .hero__sketches { display: none; } .hero { --strip-h: 0px; } }
+@media (prefers-reduced-motion: reduce) { .hero__sketches { display: none; } }
 
 /* Плашка с заголовком (text.webp) — поверх фона и эскизов.
    Позиция по красной метке на hero22.png (доли ширины/высоты хиро). */
@@ -332,9 +327,8 @@ main { display: block; }
   line-height: 1;
   letter-spacing: .02em;
   white-space: nowrap;
-  color: #4E5770;
-  /* блинтовое тиснение: светлый блик снизу, тень по верхней кромке */
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .75), 0 -1px 0 rgba(40, 36, 30, .28);
+  color: var(--emboss);
+  text-shadow: var(--emboss-shadow);
 }
 
 .hero__grid {
@@ -380,39 +374,36 @@ main { display: block; }
 .hero__facts { list-style: none; display: flex; flex-wrap: wrap; gap: clamp(20px, 4vw, 44px);
   margin: 0; padding: 22px 0 0; border-top: 1px solid var(--line); }
 .hero__facts li { display: grid; }
-.hero__facts b { font-family: var(--f-display); font-weight: 600; font-size: clamp(30px, 5vw, 44px);
-  line-height: 1; color: var(--blue-deep); }
-.hero__facts span { font-family: var(--f-mono); font-size: 11px; letter-spacing: .03em;
-  text-transform: uppercase; color: var(--chalk); max-width: 18ch; margin-top: 6px; }
+.hero__facts b { font-family: 'Literata', Georgia, serif; font-weight: 700; font-size: clamp(30px, 5vw, 44px);
+  line-height: 1; color: var(--emboss); text-shadow: var(--emboss-shadow); }
+.hero__facts span { font-family: var(--f-mono); font-size: 12px; letter-spacing: .01em;
+  color: var(--chalk); max-width: 18ch; margin-top: 6px; }
 
-/* Факты под хиро — как основная надпись чертежа: двойная рамка, ячейки */
+/* Факты под хиро — просто текст без рамок, четыре равные колонки по центру.
+   Ширина — тот же track, что у стола «Обо мне». */
 .facts {
-  max-width: var(--maxw);
+  --track: min(1832px, calc(100vw - 2 * var(--frame)));
+  max-width: var(--track);
   margin: 0 auto;
-  padding: clamp(28px, 4vw, 48px) var(--gutter) 0;
+  padding: clamp(28px, 4vw, 48px) calc(var(--track) * 0.024) 0;
 }
 .facts .hero__facts {
-  position: relative;
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0;
-  padding: 0;
-  border: 1.5px solid var(--blue-deep); border-radius: var(--radius);
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 28px clamp(16px, 3vw, 48px);
+  padding: 0; border: 0;
+  text-align: center;
 }
-/* внутренняя тонкая рамка — тот же приём, что у рамки листа */
-.facts .hero__facts::after {
-  content: ""; position: absolute; inset: 4px; pointer-events: none;
-  border: 1px solid color-mix(in srgb, var(--blue-deep) 45%, transparent);
-  border-radius: calc(var(--radius) - 3px);
-}
-.facts .hero__facts li {
-  padding: 24px clamp(16px, 2.4vw, 34px) 22px; position: relative; align-content: start;
-}
-.facts .hero__facts li + li { border-left: 1px solid var(--blue-deep); }
-.facts .hero__facts b { margin-bottom: 4px; }
-.facts .hero__facts span { max-width: 26ch; color: var(--ink-soft); }
+.facts .hero__facts li { align-content: start; justify-items: center; }
+.facts .hero__facts b { margin-bottom: 6px; font-size: clamp(38px, 5.4vw, 66px); }
+.facts .hero__facts span { color: var(--ink-soft); font-size: clamp(13px, 1.15vw, 16px); line-height: 1.45; }
+/* телефон: все четыре в одну строку; длинные слова в разметке
+   размечены &shy;, чтобы переноситься в узкой колонке */
 @media (max-width: 720px) {
-  .facts .hero__facts { grid-template-columns: 1fr 1fr; }
-  .facts .hero__facts li:nth-child(3) { border-left: 0; }
-  .facts .hero__facts li:nth-child(n + 3) { border-top: 1px solid var(--blue-deep); }
+  .facts { padding-inline: 16px; }
+  .facts .hero__facts { column-gap: 8px; }
+  .facts .hero__facts b { font-size: clamp(20px, 6.4vw, 40px); }
+  .facts .hero__facts span { font-size: 11px; letter-spacing: 0; line-height: 1.35; }
+}
 }
 
 /* На узких экранах кнопкам нет места на фото — выносим их под снимок.
@@ -421,52 +412,74 @@ main { display: block; }
    иначе она съезжает с красной метки на фоне. */
 .hero__actions .btn { font-size: clamp(11px, 1vw, 14px); padding: clamp(9px, .95vw, 14px) clamp(14px, 1.85vw, 26px); }
 
+/* До 1000px: фото целиком, табличка по центру сверху почти во всю ширину,
+   лента эскизов — ровной полосой по столу под табличкой (доли высоты фото
+   сняты с макета), кнопки — под снимком. */
 @media (max-width: 1000px) {
   .hero {
-    /* на телефоне фото приближено (--zoom) и сдвинуто влево (--shift, доли ширины),
-       чтобы плашка с заголовком читалась; плашка и бирка пересчитаны так же */
-    --zoom: 1.5;
-    --shift: 0.25;   /* окно фото 1/6…5/6 по ширине: бирка (центр 50 %) встаёт по центру экрана */
-    --card-w: clamp(90px, 24vw, 170px);
-    --strip-h: calc(var(--card-w) * 1.45 + 30px);
     --w: calc(100vw - 2 * var(--frame));
-    --photo-h: calc(var(--w) * 3072 / 5504 * var(--zoom));
+    --photo-h: calc(var(--w) * 3072 / 5504);
+    --strip-h: calc(var(--photo-h) * 0.24);
+    --card-pad: clamp(2px, .5vw, 5px);
+    /* высота карточки ≈ 88 % полосы; 1.43 — пропорция эскизов */
+    --card-w: calc((var(--strip-h) * 0.88 - 2 * var(--card-pad)) / 1.43);
     aspect-ratio: auto;
     display: block;
-    background-size: calc(100% * var(--zoom)) auto;
-    background-position: calc(var(--w) * var(--shift) * -1) top;
     /* нижние ~13 % фона — прозрачная зона с висящей биркой, кнопки встают под неё */
-    padding: calc(var(--photo-h) + var(--strip-h) + 20px) var(--gutter) 8px;
+    padding: calc(var(--photo-h) + 20px) var(--gutter) 8px;
   }
   .hero__plate {
-    top: calc(var(--photo-h) * 0.20);
-    left: calc(var(--w) * (0.453 * var(--zoom) - var(--shift)));
-    width: calc(36.7% * var(--zoom));
+    top: calc(var(--photo-h) * 0.015);
+    left: 16%;
+    width: 68%;
   }
-  .hero__tag {
-    top: calc(var(--photo-h) * 0.876);
-    left: calc(var(--w) * (0.396 * var(--zoom) - var(--shift)));
-    width: calc(20.4% * var(--zoom));
-  }
-  /* лента эскизов под биркой: на телефоне конвейер едет отдельной полосой,
-     а не по «столу», чтобы не закрывать плашку и бирку */
+  .hero__tag { top: calc(var(--photo-h) * 0.876); }
   .hero__sketches {
     inset: auto; left: 0; right: 0;
-    top: calc(var(--photo-h) + 6px); height: var(--strip-h);
+    top: calc(var(--photo-h) * 0.58); height: var(--strip-h);
     overflow-x: clip; overflow-y: visible;  /* тени карточек не обрезаются снизу */
   }
-  .sketch-card { width: var(--card-w); }
+  .sketch-card {
+    width: var(--card-w);
+    padding: var(--card-pad);
+    box-shadow: 0 3px 8px rgba(20, 25, 35, .22);
+  }
   .hero__actions {
     position: static; left: auto; top: auto; margin: 0;
     justify-content: center; gap: 14px 18px;
   }
   .hero__actions .btn { padding: 12px 20px; font-size: 13px; }
 }
-/* планшет: чем шире экран, тем меньше нужно приближать фото (бирка остаётся по центру) */
-@media (min-width: 521px) and (max-width: 700px) { .hero { --zoom: 1.25; --shift: 0.125; } }
-@media (min-width: 701px) and (max-width: 1000px) { .hero { --zoom: 1; --shift: 0; } }
 /* рамка листа на телефоне скрыта — фото хиро идёт на всю ширину экрана */
 @media (max-width: 640px) { .hero, .topbar { margin: 0; } .hero { --w: 100vw; } }
+
+/* Телефон: сверху лента эскизов, под ней табличка почти во всю ширину экрана,
+   опущенная до руки с иглой. Фото приближено (окно 9.5…89.5 % ширины снимка:
+   рука справа, бирка по центру) и опущено так, что верх снимка уходит под
+   табличку. fon-mobile.webp — тот же снимок с закрашенной серой заглушкой. */
+@media (max-width: 720px) {
+  .hero {
+    --zoom: 1.25;
+    --bg-top: calc(var(--w) * 0.34);
+    --photo-h: calc(var(--w) * 3072 / 5504 * var(--zoom));
+    --strip-h: calc(var(--w) * 0.28);
+    background-image: url("../img/fon-mobile.webp");
+    background-size: calc(100% * var(--zoom)) auto;
+    background-position: calc(var(--w) * -0.095 * var(--zoom)) var(--bg-top);
+    padding-top: calc(var(--bg-top) + var(--photo-h) + 12px);
+  }
+  .hero__plate {
+    top: calc(var(--w) * 0.305);
+    left: 2.8%;
+    width: 94.4%;
+  }
+  .hero__sketches { top: calc(var(--w) * 0.012); }
+  .hero__tag {
+    top: calc(var(--bg-top) + var(--photo-h) * 0.876);
+    left: calc(var(--w) * (0.396 - 0.095) * var(--zoom));
+    width: calc(var(--w) * 0.204 * var(--zoom));
+  }
+}
 
 
 /* --------- ОБО МНЕ: раскройный стол --------- */
@@ -583,13 +596,26 @@ main { display: block; }
   line-height: 1.6;
   margin: 0 0 18px;
 }
-.desk__quote {
+/* двойной класс: иначе .desk__text p перебивает шрифт цитаты */
+.desk__text .desk__quote {
   font-family: var(--f-hand);
   font-size: clamp(24px, 3vw, 32px);
   line-height: 1.25;
   color: #4A3418;
   margin-top: 22px !important;
 }
+
+/* Раскрытие текста: 0fr → 1fr анимирует высоту без замера в JS */
+.desk__more {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .5s var(--ease);
+}
+.desk__more > div { min-height: 0; overflow: hidden; }
+.desk__more--sm,
+.desk__text.is-open .desk__more { grid-template-rows: 1fr; }
+.desk__toggle { margin-top: 10px; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .desk__more { transition: none; } }
 
 /* Слой 3 (верхний) — фото в тонкой белой рамке: слева, приподнято над верхом
    миллиметровки, правым краем заходит на лист бумаги. */
@@ -640,6 +666,8 @@ main { display: block; }
     margin: 0;
     padding: 54px clamp(22px, 6vw, 34px) 30px;
   }
+  .desk__more--sm { grid-template-rows: 0fr; }
+  .desk__text.is-open .desk__more--sm { grid-template-rows: 1fr; }
 }
 
 /* --------- УСЛУГИ: чертёжный лист с книгой-разворотом --------- */
@@ -782,7 +810,8 @@ main { display: block; }
 .spread__head h3 {
   font-family: 'Literata', Georgia, serif; font-weight: 700; text-transform: uppercase;
   letter-spacing: .01em; line-height: .94;
-  font-size: clamp(28px, 3.8vw, 48px); margin: 0; color: var(--blue-deep);
+  font-size: clamp(28px, 3.8vw, 48px); margin: 0;
+  color: var(--emboss); text-shadow: var(--emboss-shadow);
 }
 .spread__ico { width: clamp(52px, 6vw, 78px); height: clamp(52px, 6vw, 78px);
   flex: none; color: var(--blue); }
@@ -840,13 +869,23 @@ main { display: block; }
 @media (max-width: 820px) {
   .services-scene { padding: clamp(20px, 5vw, 34px); }
   .draft { display: none; }
-  .spread { grid-template-columns: 1fr; }
+  /* minmax(0, …): у 1fr минимум = min-content, и длинное содержимое страницы
+     распирало колонку шире экрана (горизонтальный скролл на 375px) */
+  .spread { grid-template-columns: minmax(0, 1fr); }
   .spread__spine { display: none; }
   /* в одну колонку переплёта нет — лента легла бы поверх текста */
   .spread__tape { display: none; }
   .spread__page--left  { border-radius: 6px 6px 0 0; border-bottom: 1px solid rgba(40,42,55,.22); }
   .spread__page--right { border-radius: 0 0 6px 6px; }
   .spread__page::after { display: none; }
+}
+/* «КОНСТРУКТОРА» не переносится: на узком телефоне кегль и иконка
+   уменьшаются вместе с экраном, иначе заголовок выталкивает иконку за край */
+@media (max-width: 420px) {
+  .spread__page { padding-inline: 20px; }
+  .spread__head { gap: 12px; }
+  .spread__head h3 { font-size: clamp(20px, 7vw, 28px); }
+  .spread__ico { width: 40px; height: 40px; }
 }
 
 /* --------- ПОРТФОЛИО: миллиметровка, фото-слайдер «лекало ↔ изделие», лист со штампом --------- */
@@ -990,10 +1029,12 @@ main { display: block; }
 .has-custom-cursor .lightbox button { cursor: pointer; }
 .lightbox::backdrop { background: rgba(20, 28, 40, .84); backdrop-filter: blur(3px); }
 .lightbox__fig { margin: 0; display: grid; justify-items: center; gap: 12px; }
-.lightbox__img { max-width: 100%; max-height: calc(94vh - 50px); width: auto; height: auto;
+.lightbox__img { max-width: 100%; max-height: calc(94vh - 110px); width: auto; height: auto;
   background: #fff; padding: 8px; box-shadow: 0 20px 50px rgba(0,0,0,.4); }
-.lightbox__cap { font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
-  color: var(--paper); }
+.lightbox__cap { display: grid; gap: 6px; max-width: 60ch; text-align: center; color: var(--paper); }
+.lightbox__title { font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+.lightbox__desc { font-size: 14px; line-height: 1.45; color: color-mix(in srgb, var(--paper) 82%, transparent); }
+.lightbox__desc:empty { display: none; }
 .lightbox__btn, .lightbox__close {
   position: fixed; display: grid; place-items: center; cursor: pointer;
   width: 48px; height: 48px; border-radius: var(--radius);
@@ -1006,7 +1047,14 @@ main { display: block; }
 .lightbox__close { top: clamp(10px, 3vw, 30px); right: clamp(10px, 3vw, 40px); font-size: 28px; }
 .lightbox__btn[hidden] { display: none; }
 
+.works__sub-phone { display: none; }
+
 @media (max-width: 820px) {
+  /* телефон: только закладки и галерея миниатюр, работа открывается в просмотре */
+  .works__main { display: none; }
+  .works__sub-desk { display: none; }
+  .works__sub-phone { display: inline; }
+  .thumb[aria-current="true"] { outline: 0; }
   .works { width: 100%; left: auto; margin-left: 0; padding: 22px 16px 26px; }
   /* порядок на телефоне: закладки → блоки-миниатюры → выбранная работа */
   .works { display: flex; flex-direction: column; }
@@ -1020,8 +1068,13 @@ main { display: block; }
   .works__sheet { margin-top: -26px; padding: 50px clamp(20px, 6vw, 32px) 28px; }
   /* фото теперь над текстом — стрелка подсказки смотрит вверх */
   .works__arrow { display: inline-block; transform: rotate(90deg); }
-  .works__thumbs { grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 0; margin-bottom: 30px; }
-  .lightbox__btn { top: auto; bottom: 14px; transform: none; }
+  .works__thumbs { grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 0; }
+  /* место под подпись с описанием */
+  .lightbox__img { max-height: calc(100svh - 220px); }
+  .lightbox__cap { padding: 0 4px; }
+  .lightbox__btn { width: 40px; height: 40px; font-size: 18px; box-shadow: 3px 3px 0 var(--blue); }
+  .lightbox__btn--prev { left: 8px; }
+  .lightbox__btn--next { right: 8px; }
 }
 
 /* --------- КОНТАКТЫ --------- */
