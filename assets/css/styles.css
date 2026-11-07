@@ -446,7 +446,7 @@ main { display: block; }
   }
   .hero__actions {
     position: static; left: auto; top: auto; margin: 0;
-    justify-content: center; gap: 14px 18px;
+    justify-content: center; gap: 14px 24px;
   }
   .hero__actions .btn { padding: 12px 20px; font-size: 13px; }
 }
@@ -473,7 +473,7 @@ main { display: block; }
     --plate-top: calc(var(--w) * 0.012 + var(--strip-h) * 0.92 + var(--gap));
     --plate-h: calc((var(--w) - 2 * var(--gap)) / 2.25);   /* 2.25 — пропорция text.webp */
     --bg-top: calc(var(--plate-top) + var(--plate-h) + var(--gap));
-    --actions-top: calc(var(--bg-top) + var(--gap) * 2.5);
+    --actions-top: calc(var(--bg-top) + var(--gap) * 2.5 + 11px);
     /* ниже 0.96 у снимка только прозрачность (на краю висит бирка) — срезаем */
     --photo-vis: calc(var(--photo-h) * (0.96 - var(--crop)));
     background-image: none;
@@ -486,9 +486,9 @@ main { display: block; }
     content: ""; position: absolute; z-index: -1;
     left: 0; right: 0; top: var(--bg-top); height: var(--photo-vis);
     background:
-      /* вуаль под кнопками (46px — их высота) */
-      linear-gradient(rgb(220 221 227 / .82), rgb(220 221 227 / .6) 60%, rgb(220 221 227 / 0))
-        0 0 / 100% calc(var(--gap) * 4.5 + 46px) no-repeat,
+      /* лёгкая вуаль под кнопками (46px — их высота): рулоны за ними должны читаться */
+      linear-gradient(rgb(220 221 227 / .3), rgb(220 221 227 / .15) 60%, rgb(220 221 227 / 0))
+        0 0 / 100% calc(var(--gap) * 4.5 + 57px) no-repeat,
       url("../img/fon-mobile.webp")
         calc(var(--w) * var(--shift) * var(--zoom) * -1) calc(var(--photo-h) * var(--crop) * -1)
         / calc(100% * var(--zoom)) auto no-repeat;
@@ -507,7 +507,7 @@ main { display: block; }
 }
 @media (max-width: 640px) { .hero { --w: 100vw; } }
 /* кнопки в одну строку даже на 320px: на двух строках они вылезли бы за вуаль */
-@media (max-width: 380px) { .hero__actions { gap: 10px; } .hero__actions .btn { padding: 12px 13px; font-size: 12px; } }
+@media (max-width: 380px) { .hero__actions { gap: 10px 18px; } .hero__actions .btn { padding: 12px 13px; font-size: 12px; } }
 
 
 /* --------- ОБО МНЕ: раскройный стол --------- */
@@ -903,9 +903,15 @@ main { display: block; }
   .spread__spine { display: none; }
   /* в одну колонку переплёта нет — лента легла бы поверх текста */
   .spread__tape { display: none; }
-  .spread__page--left  { border-radius: 6px 6px 0 0; border-bottom: 1px solid rgba(40,42,55,.22); }
-  .spread__page--right { border-radius: 0 0 6px 6px; }
+  /* телефон: один общий лист без фото — две группы услуг идут строками подряд */
+  .spread { background: #ecebf1; }
+  .spread__page { background: none; box-shadow: none; }
+  .spread__page--left { padding-bottom: 0; }
+  .spread__page--left .spread__btn { display: none; }
   .spread__page::after { display: none; }
+  .spread__photo { display: none; }
+  .spread__fold { display: none; }
+  .spread::after { display: none; }
 }
 /* «КОНСТРУКТОРА» не переносится: на узком телефоне кегль и иконка
    уменьшаются вместе с экраном, иначе заголовок выталкивает иконку за край */
