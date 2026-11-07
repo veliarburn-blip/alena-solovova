@@ -399,7 +399,7 @@ main { display: block; }
 /* телефон: все четыре в одну строку; длинные слова в разметке
    размечены &shy;, чтобы переноситься в узкой колонке */
 @media (max-width: 720px) {
-  .facts { padding-inline: 16px; }
+  .facts { padding: 12px 16px 0; }
   .facts .hero__facts { column-gap: 8px; }
   .facts .hero__facts b { font-size: clamp(20px, 6.4vw, 40px); }
   .facts .hero__facts span { font-size: 11px; letter-spacing: 0; line-height: 1.35; }
@@ -465,7 +465,7 @@ main { display: block; }
     --w: calc(100vw - 2 * var(--frame));
     --zoom: 1.6;
     --shift: calc(0.5 - 0.5 / var(--zoom));   /* окно снимка по центру */
-    --crop: 0.12;    /* срез сверху, доля высоты снимка */
+    --crop: 0.2;     /* срез сверху, доля высоты снимка */
     --gap: calc(var(--w) * 0.04);
     --photo-h: calc(var(--w) * 3072 / 5504 * var(--zoom));
     --strip-h: calc(var(--w) * 0.28);
@@ -473,8 +473,9 @@ main { display: block; }
     --plate-top: calc(var(--w) * 0.012 + var(--strip-h) * 0.92 + var(--gap));
     --plate-h: calc((var(--w) - 2 * var(--gap)) / 2.25);   /* 2.25 — пропорция text.webp */
     --bg-top: calc(var(--plate-top) + var(--plate-h) + var(--gap));
-    --actions-top: calc(var(--bg-top) + var(--gap));
-    --photo-vis: calc(var(--photo-h) * (1 - var(--crop)));
+    --actions-top: calc(var(--bg-top) + var(--gap) * 2.5);
+    /* ниже 0.96 у снимка только прозрачность (на краю висит бирка) — срезаем */
+    --photo-vis: calc(var(--photo-h) * (0.96 - var(--crop)));
     background-image: none;
     isolation: isolate;   /* ::before с z-index:-1 остаётся внутри хиро, под кнопками */
     padding-top: var(--actions-top);
@@ -487,7 +488,7 @@ main { display: block; }
     background:
       /* вуаль под кнопками (46px — их высота) */
       linear-gradient(rgb(220 221 227 / .82), rgb(220 221 227 / .6) 60%, rgb(220 221 227 / 0))
-        0 0 / 100% calc(var(--gap) * 3 + 46px) no-repeat,
+        0 0 / 100% calc(var(--gap) * 4.5 + 46px) no-repeat,
       url("../img/fon-mobile.webp")
         calc(var(--w) * var(--shift) * var(--zoom) * -1) calc(var(--photo-h) * var(--crop) * -1)
         / calc(100% * var(--zoom)) auto no-repeat;
